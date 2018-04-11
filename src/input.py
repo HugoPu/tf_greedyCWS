@@ -11,13 +11,19 @@ from decorator import lazy_property
 Py3 = sys.version_info[0] == 3
 
 class CWS_Input:
-    def __init__(self, config, name=None):
-        self.max_sent_len = max_sent_len = config.max_sent_len
-        self.word_proportion =  config.word_proportion
+    def __init__(self, config, train_input=None, name=None):
+
         self.data_path = config.data_path
         self.is_training = config.is_training
-        self.threhold = config.threhold
-        self.max_sent_len = config.max_sent_len
+
+        if not self.is_training:
+            self._cache_char_dict = train_input.char_dict
+            self._cache_word_dict = train_input.word_dict
+        else:
+            self.max_sent_len = config.max_sent_len
+            self.word_proportion = config.word_proportion
+            self.threhold = config.threhold
+
 
     @lazy_property
     def lines(self):
@@ -37,14 +43,14 @@ class CWS_Input:
                 if len(re.sub('\W', '', word, flags=re.U)) == 0:
                     if idx > sent_left_pointer:
                         sent = ''.join(segs[sent_left_pointer:idx])
-                        if len(sent) <= self.max_sent_len and len(sent) > 1:
+                        if not self.is_training or (len(sent) <= self.max_sent_len and len(sent) > 1):
                             sentences.append(segs[sent_left_pointer:idx])
                     sent_left_pointer = idx + 1  # If it is not a punctuation, pointer move right
 
             # If there isn't any punctuation in the line
             if sent_left_pointer != len(segs):
                 sent = ''.join(segs[sent_left_pointer:])
-                if len(sent) <= self.max_sent_len and len(sent) > 1:
+                if not self.is_training or (len(sent) <= self.max_sent_len and len(sent) > 1):
                     sentences.append(segs[sent_left_pointer:])
 
         return sentences
@@ -73,6 +79,7 @@ class CWS_Input:
 
     @lazy_property
     def sents_char_label(self):
+        if not self.is_training: return None
         sent_char_label = []
         for sent_words in self.sentences:
             labels = []

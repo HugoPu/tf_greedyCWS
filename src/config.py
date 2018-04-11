@@ -29,18 +29,17 @@ class PKU_Config(object):
     batch_size = 256
     char_dims = 100
     word_dims = 50
-    nhiddens = 51
+    nhiddens = 50
     dropout_rate = 0.2
     max_word_len = 4
     load_params = None,  # None for train mode, otherwise please specify the parameter file.
     margin_loss_discount = 0.2
     max_sent_len = 60
-    shuffle_data = True
+    shuffle_data = False
     data_path = '../data/pku_train'
     threhold = 5.
-    #dev_file = '../data/pku_test'  # dev/test in train/test mode.
     pre_trained = None
-    lr = 0.2
+    lr = 0.002
     edecay = 0.2 # msr,pku 0.2,0.1
     momentum = 0.5
     word_proportion = 0.5  # we keep a short list H of the most frequent words
@@ -60,7 +59,6 @@ class MSR_Config(object):
     shuffle_data = True
     data_path = '../data/pku_train'
     threhold = 5.
-    #dev_file = '../data/pku_test'  # dev/test in train/test mode.
     pre_trained = None
     lr = 0.2
     edecay = 0.1  # msr,pku 0.2,0.1
@@ -68,10 +66,17 @@ class MSR_Config(object):
     word_proportion = 0.5  # we keep a short list H of the most frequent words
     is_training = True
 
-def get_config():
+class Test_Config(object):
+    data_path = '../data/pku_test'
+    output_path = '../result/dev_result'
+    is_training = False
+
+def get_config(type):
     config = None
-    if FLAGS.model == 'pku':
+    if type == 'pku':
         config = PKU_Config()
-    else:
+    elif type == 'msr':
         config = MSR_Config()
+    else:
+        config = Test_Config()
     return config
